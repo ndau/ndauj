@@ -13,17 +13,15 @@ import java.util.List;
  * DNSSEC.
  */
 public final class Base32 {
-    private byte[] alphabet;
-    private byte[] decodeMap;
-    private byte padChar;
     private static int decodeMapSize = 256;
-
     private static String StdAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-
     /**
      * StdEncoding is the standard base32 encoding as defined in RFC 4648
      */
     public static Base32 StdEncoding = new Base32(StdAlphabet);
+    private byte[] alphabet;
+    private byte[] decodeMap;
+    private byte padChar;
 
     public Base32(String alphabet) {
         this.padChar = '=';
@@ -33,7 +31,7 @@ public final class Base32 {
             throw new IllegalArgumentException("encoding alphabet is not 32 bytes long");
         }
 
-        decodeMap = new byte[decodeMapSize];
+        this.decodeMap = new byte[decodeMapSize];
         Arrays.fill(this.decodeMap, (byte) 0xff);
         for (int i = 0; i < this.alphabet.length; i++) {
             this.decodeMap[this.alphabet[i]] = (byte) i;
@@ -88,23 +86,23 @@ public final class Base32 {
             // unpack 8x 5-bit source blocks into a 5-byte
             // destination quantum
             switch (src.size()) {
-            default:
-                b[7] = (byte) (src.get(4) & 0x1f);
-                b[6] = (byte) (src.get(4) >> 5);
-            case 4:
-                b[6] |= (byte) ((src.get(3) << 3) & 0x1f);
-                b[5] = (byte) ((src.get(3) >> 2) & 0x1f);
-                b[4] = (byte) (src.get(3) >> 7);
-            case 3:
-                b[4] |= (byte) ((src.get(2) << 1) & 0x1f);
-                b[3] = (byte) ((src.get(2) >> 4) & 0x1f);
-            case 2:
-                b[3] |= (byte) ((src.get(1) << 4) & 0x1f);
-                b[2] = (byte) ((src.get(1) >> 1) & 0x1f);
-                b[1] = (byte) ((src.get(1) >> 6) & 0x1f);
-            case 1:
-                b[1] |= (byte) ((src.get(0) << 2) & 0x1f);
-                b[0] = (byte) (src.get(0) >> 3);
+                default:
+                    b[7] = (byte) (src.get(4) & 0x1f);
+                    b[6] = (byte) (src.get(4) >> 5);
+                case 4:
+                    b[6] |= (byte) ((src.get(3) << 3) & 0x1f);
+                    b[5] = (byte) ((src.get(3) >> 2) & 0x1f);
+                    b[4] = (byte) (src.get(3) >> 7);
+                case 3:
+                    b[4] |= (byte) ((src.get(2) << 1) & 0x1f);
+                    b[3] = (byte) ((src.get(2) >> 4) & 0x1f);
+                case 2:
+                    b[3] |= (byte) ((src.get(1) << 4) & 0x1f);
+                    b[2] = (byte) ((src.get(1) >> 1) & 0x1f);
+                    b[1] = (byte) ((src.get(1) >> 6) & 0x1f);
+                case 1:
+                    b[1] |= (byte) ((src.get(0) << 2) & 0x1f);
+                    b[0] = (byte) (src.get(0) >> 3);
             }
 
             // encode 5-bit blocks using the base32 alphabet
@@ -114,18 +112,18 @@ public final class Base32 {
 
             // Pad the final quantum
             if (src.size() < 2) {
-                out.set(out.size()-6, this.padChar);
-                out.set(out.size()-5, this.padChar);
+                out.set(out.size() - 6, this.padChar);
+                out.set(out.size() - 5, this.padChar);
             }
             if (src.size() < 3) {
-                out.set(out.size()-4, this.padChar);
+                out.set(out.size() - 4, this.padChar);
             }
             if (src.size() < 4) {
-                out.set(out.size()-3, this.padChar);
-                out.set(out.size()-2, this.padChar);
+                out.set(out.size() - 3, this.padChar);
+                out.set(out.size() - 2, this.padChar);
             }
             if (src.size() < 5) {
-                out.set(out.size()-1, this.padChar);
+                out.set(out.size() - 1, this.padChar);
                 break;
             }
 
@@ -174,7 +172,7 @@ public final class Base32 {
             byte[] dbuf = new byte[8];
             int dlen = 8;
 
-            for (int j = 0; j < 8;) {
+            for (int j = 0; j < 8; j++) {
                 // we have reached the end and are missing padding
                 if (src.size() == 0) {
                     throw new CorruptInputError(olen - src.size() - j);
@@ -192,7 +190,7 @@ public final class Base32 {
                     for (int k = 0; k < 8 - 1 - j; k++) {
                         if (src.size() > k && src.get(k) != this.padChar) {
                             // incorrect padding
-                            throw new CorruptInputError(olen = src.size() + k - 1);
+                            throw new CorruptInputError(olen - src.size() + k - 1);
                         }
                     }
                     dlen = j;
@@ -211,21 +209,31 @@ public final class Base32 {
                 if (dbuf[j] == (byte) 0xff) {
                     throw new CorruptInputError(olen - src.size() - 1);
                 }
-                j++;
             }
 
             // pack 8 5-bit source blocks into 5 byte destination
+            byte[] suffix = new byte[5]; // bytes to append to the dest
+            int dcnt = 0; // how many need appending
             switch (dlen) {
-            case 2:
-                dst.add((byte) (dbuf[0] << 3 | dbuf[1] >> 2));
-            case 4:
-                dst.add((byte) (dbuf[1] << 6 | dbuf[2] << 1 | dbuf[3] >> 4));
-            case 5:
-                dst.add((byte) (dbuf[3] << 4 | dbuf[4] >> 1));
-            case 7:
-                dst.add((byte) (dbuf[4] << 7 | dbuf[5] << 2 | dbuf[6] >> 3));
-            case 8:
-                dst.add((byte) (dbuf[6] << 5 | dbuf[7]));
+                case 8:
+                    suffix[4] = (byte) (dbuf[6] << 5 | dbuf[7]);
+                    dcnt++;
+                case 7:
+                    suffix[3] = (byte) (dbuf[4] << 7 | dbuf[5] << 2 | dbuf[6] >> 3);
+                    dcnt++;
+                case 5:
+                    suffix[2] = (byte) (dbuf[3] << 4 | dbuf[4] >> 1);
+                    dcnt++;
+                case 4:
+                    suffix[1] = (byte) (dbuf[1] << 6 | dbuf[2] << 1 | dbuf[3] >> 4);
+                    dcnt++;
+                case 2:
+                    suffix[0] = (byte) (dbuf[0] << 3 | dbuf[1] >> 2);
+                    dcnt++;
+            }
+
+            for (int i = 0; i < dcnt; i++) {
+                dst.add(suffix[i]);
             }
         }
 

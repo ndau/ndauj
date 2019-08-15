@@ -93,5 +93,5 @@ class Base32Test {
             caughtOffset = e.getErrByte();
         }
         assertEquals(offset, caughtOffset);
-            }
+    }
 }
