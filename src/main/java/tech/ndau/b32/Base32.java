@@ -7,12 +7,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * An Encoding is a radix 32 encoding/decoding scheme, defined by a 32-character
+ * An Base32 is a radix 32 encoding/decoding scheme, defined by a 32-character
  * alphabet. The most common is the "base32" encoding introduced for SASL GSSAPI
  * and standardized in RFC 4648. The alternate "base32hex" encoding is used in
  * DNSSEC.
  */
-public final class Encoding {
+public final class Base32 {
     private byte[] alphabet;
     private byte[] decodeMap;
     private byte padChar;
@@ -23,9 +23,9 @@ public final class Encoding {
     /**
      * StdEncoding is the standard base32 encoding as defined in RFC 4648
      */
-    public static Encoding StdEncoding = new Encoding(StdAlphabet);
+    public static Base32 StdEncoding = new Base32(StdAlphabet);
 
-    public Encoding(String alphabet) {
+    public Base32(String alphabet) {
         this.padChar = '=';
         this.alphabet = alphabet.getBytes();
 
@@ -73,7 +73,7 @@ public final class Encoding {
         // shallow-copy the src so we don't clear the original
         src = new ArrayList<>(src);
 
-        int size = Encoding.EncodedLen(src.size());
+        int size = Base32.EncodedLen(src.size());
 
         // create an output array of the appropriate size
         // we'd really kind of prefer that this be a direct byte array
@@ -167,7 +167,7 @@ public final class Encoding {
         // shallow-copy the src
         src = new ArrayList<>(src);
         // prepare dest
-        List<Byte> dst = new ArrayList<>(Encoding.DecodedLen(src.size()));
+        List<Byte> dst = new ArrayList<>(Base32.DecodedLen(src.size()));
 
         while (src.size() > 0 && !end) {
             // decode quantum using the base32 alphabet
@@ -198,7 +198,7 @@ public final class Encoding {
                     dlen = j;
                     end = true;
                     // 7, 5 and 2 are not valid padding lengths, and so 1, 3 and 6 are not
-                    // valid dlen values. See RFC 4648 Section 6 "Base 32 Encoding" listing
+                    // valid dlen values. See RFC 4648 Section 6 "Base 32 Base32" listing
                     // the five valid padding lengths, and Section 9 "Illustrations and
                     // Examples" for an illustration for how the 1st, 3rd and 6th base32
                     // src bytes do not yield enough information to decode a dst byte.
