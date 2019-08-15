@@ -1,6 +1,7 @@
 package tech.ndau.b32;
 
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
@@ -9,58 +10,88 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Base32Test {
 
-    static class TestPair {
-        String decoded;
-        String encoded;
+    private static Stream<Arguments> testPairs() {
+        return Stream.of(
+                // RFC 4648 examples
+                Arguments.of("", ""),
+                Arguments.of("f", "MY======"),
+                Arguments.of("fo", "MZXQ===="),
+                Arguments.of("foo", "MZXW6==="),
+                Arguments.of("foob", "MZXW6YQ="),
+                Arguments.of("fooba", "MZXW6YTB"),
+                Arguments.of("foobar", "MZXW6YTBOI======"),
 
-        TestPair(String decoded, String encoded) {
-            this.decoded = decoded;
-            this.encoded = encoded;
+                // Wikipedia examples, converted to base32
+                Arguments.of("sure.", "ON2XEZJO"),
+                Arguments.of("sure", "ON2XEZI="),
+                Arguments.of("sur", "ON2XE==="),
+                Arguments.of("su", "ON2Q===="),
+                Arguments.of("leasure.", "NRSWC43VOJSS4==="),
+                Arguments.of("easure.", "MVQXG5LSMUXA===="),
+                Arguments.of("asure.", "MFZXK4TFFY======"),
+                Arguments.of("sure.", "ON2XEZJO"),
+
+                // big
+                Arguments.of(
+                        "Twas brillig, and the slithy toves",
+                        "KR3WC4ZAMJZGS3DMNFTSYIDBNZSCA5DIMUQHG3DJORUHSIDUN53GK4Y="
+                )
+        );
+    }
+
+    private static Stream<Arguments> decodeCorrupt() {
+        // -1 => no corruption
+        return Stream.of(
+                Arguments.of("", -1),
+                Arguments.of("!!!!", 0),
+                Arguments.of("x===", 0),
+                Arguments.of("AA=A====", 2),
+                Arguments.of("AAA=AAAA", 3),
+                Arguments.of("MMMMMMMMM", 8),
+                Arguments.of("MMMMMM", 0),
+                Arguments.of("A=", 1),
+                Arguments.of("AA=", 3),
+                Arguments.of("AA==", 4),
+                Arguments.of("AA===", 5),
+                Arguments.of("AAAA=", 5),
+                Arguments.of("AAAA==", 6),
+                Arguments.of("AAAAA=", 6),
+                Arguments.of("AAAAA==", 7),
+                Arguments.of("A=======", 1),
+                Arguments.of("AA======", -1),
+                Arguments.of("AAA=====", 3),
+                Arguments.of("AAAA====", -1),
+                Arguments.of("AAAAA===", -1),
+                Arguments.of("AAAAAA==", 6),
+                Arguments.of("AAAAAAA=", -1),
+                Arguments.of("AAAAAAAA", -1)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("testPairs")
+    void encodeToString(String decoded, String encoded) {
+        String out = Base32.StdEncoding.EncodeToString(decoded.getBytes());
+        assertEquals(encoded, out);
+    }
+
+    @ParameterizedTest
+    @MethodSource("testPairs")
+    void decodeString(String decoded, String encoded) throws CorruptInputError {
+        byte[] out = Base32.StdEncoding.DecodeString(encoded);
+        String s = new String(out);
+        assertEquals(decoded, s);
+    }
+
+    @ParameterizedTest
+    @MethodSource("decodeCorrupt")
+    void decodeCorrupt(String encoded, int offset) {
+        int caughtOffset = -1;
+        try {
+            Base32.StdEncoding.DecodeString(encoded);
+        } catch (CorruptInputError e) {
+            caughtOffset = e.getErrByte();
         }
-    }
-
-    static TestPair[] testPairs = {
-            // RFC 4648 examples
-            new TestPair("", ""),
-            new TestPair("f", "MY======"),
-            new TestPair("fo", "MZXQ===="),
-            new TestPair("foo", "MZXW6==="),
-            new TestPair("foob", "MZXW6YQ="),
-            new TestPair("fooba", "MZXW6YTB"),
-            new TestPair("foobar", "MZXW6YTBOI======"),
-
-            // Wikipedia examples, converted to base32
-            new TestPair("sure.", "ON2XEZJO"),
-            new TestPair("sure", "ON2XEZI="),
-            new TestPair("sur", "ON2XE==="),
-            new TestPair("su", "ON2Q===="),
-            new TestPair("leasure.", "NRSWC43VOJSS4==="),
-            new TestPair("easure.", "MVQXG5LSMUXA===="),
-            new TestPair("asure.", "MFZXK4TFFY======"),
-            new TestPair("sure.", "ON2XEZJO"),
-
-            // big
-            new TestPair(
-                    "Twas brillig, and the slithy toves",
-                    "KR3WC4ZAMJZGS3DMNFTSYIDBNZSCA5DIMUQHG3DJORUHSIDUN53GK4Y="
-            )
-    };
-
-    static Stream<TestPair> pairProvider() {
-        return Stream.of(Base32Test.testPairs);
-    }
-
-    @ParameterizedTest
-    @MethodSource("pairProvider")
-    void encodeToString(TestPair pair) {
-        String out = Base32.StdEncoding.EncodeToString(pair.decoded.getBytes());
-        assertEquals(pair.encoded, out);
-    }
-
-    @ParameterizedTest
-    @MethodSource("pairProvider")
-    void decodeString(TestPair pair) throws CorruptInputError {
-        byte[] out = Base32.StdEncoding.DecodeString(pair.encoded);
-        assertEquals(pair.decoded.getBytes(), out);
-    }
+        assertEquals(offset, caughtOffset);
+            }
 }
