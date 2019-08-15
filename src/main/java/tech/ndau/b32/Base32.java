@@ -13,15 +13,30 @@ import java.util.List;
  * DNSSEC.
  */
 public final class Base32 {
+    /**
+     * NdauEncoding is base32 encoding with a custom alphabet.
+     * <p>
+     * It consists of the lowercase alphabet and digits, without
+     * l, 1, 0, and o. When decoding, we accept either case.
+     */
+    public static Base32 NdauEncoding;
     private static int decodeMapSize = 256;
     private static String StdAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     /**
      * StdEncoding is the standard base32 encoding as defined in RFC 4648
      */
     public static Base32 StdEncoding = new Base32(StdAlphabet);
+    private static String NdauAlphabet = "abcdefghijkmnpqrstuvwxyz23456789";
+
+    static {
+        NdauEncoding = new Base32(NdauAlphabet);
+        NdauEncoding.foldLowercase = true;
+    }
+
     private byte[] alphabet;
     private byte[] decodeMap;
     private byte padChar;
+    private boolean foldLowercase = false;
 
     public Base32(String alphabet) {
         this.padChar = '=';
@@ -241,6 +256,9 @@ public final class Base32 {
     }
 
     public byte[] DecodeString(String src) throws CorruptInputError {
+        if (this.foldLowercase) {
+            src = src.toLowerCase();
+        }
         List<Byte> bytel = new ArrayList<>(src.length());
         for (byte b : src.getBytes()) {
             bytel.add(b);

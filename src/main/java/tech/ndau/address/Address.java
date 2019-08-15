@@ -1,8 +1,75 @@
 package tech.ndau.address;
 
 
+import tech.ndau.b32.Base32;
+import tech.ndau.b32.CorruptInputError;
+
 public final class Address {
+    public static int AddrLength = 48;
+    public static int MinDataLength = 12;
+    private static String addrPrefix = "nd";
+    private static int kindOffset = Address.addrPrefix.length();
+    private static int hashTrim = 26;
     private String addr;
+
+    /**
+     * Create and validate an Address
+     *
+     * @param addr the address to validate
+     */
+    public Address(String addr) throws InvalidAddress {
+        addr = addr.toLowerCase();
+        Address.Validate(addr);
+        this.addr = addr;
+    }
+
+    private static Pair<byte[], byte[]> splitAddrData(byte[] addrData) {
+        byte[] data = new byte[addrData.length - 2];
+        byte[] cksum = new byte[2];
+
+        System.arraycopy(addrData, 0, data, 0, addrData.length - 2);
+        System.arraycopy(addrData, addrData.length - 2, cksum, 0, 2);
+        return new Pair<>(data, cksum);
+    }
+
+    /**
+     * Validate a string as an address
+     *
+     * @param addr should be an ndau address
+     * @throws InvalidAddress if the provided string is not a valid address.
+     */
+    public static void Validate(String addr) throws InvalidAddress {
+        if (!addr.startsWith(addrPrefix)) {
+            throw new InvalidAddress(String.format("Address must begin with the prefix %s", addrPrefix));
+        }
+        if (addr.length() != AddrLength) {
+            throw new InvalidAddress(String.format("Address must have length %d", AddrLength));
+        }
+        try {
+            Address.Kind.Parse(addr.getBytes()[kindOffset]);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidAddress(e);
+        }
+        byte[] h;
+        try {
+            h = Base32.NdauEncoding.DecodeString(addr);
+        } catch (CorruptInputError e) {
+            throw new InvalidAddress(e);
+        }
+        Pair<byte[], byte[]> pair = Address.splitAddrData(h);
+        if (!Checksum.Check(pair.x, pair.y)) {
+            throw new InvalidAddress("checksum failure");
+        }
+    }
+
+    @Override
+    public String toString() {
+        return this.addr;
+    }
+
+    public Kind kind() {
+        return Kind.Parse(this.addr.getBytes()[kindOffset]);
+    }
 
     public enum Kind {
         User,
@@ -13,7 +80,7 @@ public final class Address {
         MarketMaker;
 
         public static Kind Parse(byte b) throws IllegalArgumentException {
-            switch(b) {
+            switch (b) {
                 case 'a':
                     return User;
                 case 'n':
@@ -32,7 +99,7 @@ public final class Address {
         }
 
         public byte Byte() {
-            switch(this) {
+            switch (this) {
                 case User:
                     return 'a';
                 case Ndau:
@@ -52,35 +119,13 @@ public final class Address {
         }
     }
 
-    private static String addrPrefix = "nd";
-    private static int kindOffset = Address.addrPrefix.length();
-    private static int hashTrim = 26;
-    public static int AddrLength = 48;
-    public static int MinDataLength = 12;
+    private static class Pair<X, Y> {
+        public final X x;
+        public final Y y;
 
-    /**
-     * Create and validate an Address
-     *
-     * @param addr the address to validate
-     */
-    public Address(String addr) throws InvalidAddress {
-        addr = addr.toLowerCase();
-        if (! addr.startsWith(addrPrefix)) {
-            throw new InvalidAddress(String.format("Address must begin with the prefix %s", addrPrefix));
+        public Pair(X x, Y y) {
+            this.x = x;
+            this.y = y;
         }
-        if (addr.length() != AddrLength) {
-            throw new InvalidAddress(String.format("Address must have length %d", AddrLength));
-        }
-        Address.Kind kind;
-        try {
-            kind = Address.Kind.Parse(addr.getBytes()[kindOffset]);
-        } catch(IllegalArgumentException e) {
-            throw new InvalidAddress(e.toString());
-        }
-
-    }
-
-    public String toString() {
-        return this.addr;
     }
 }
