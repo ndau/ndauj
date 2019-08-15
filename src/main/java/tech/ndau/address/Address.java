@@ -1,4 +1,4 @@
-package main.java.tech.ndau.address;
+package tech.ndau.address;
 
 
 public final class Address {

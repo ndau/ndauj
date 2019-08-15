@@ -1,4 +1,4 @@
-package main.java.tech.ndau.b32;
+package tech.ndau.b32;
 
 // largely translated from https://golang.org/src/encoding/base32/base32.go?s=569:650#L13
 

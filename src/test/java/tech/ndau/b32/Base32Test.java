@@ -1,4 +1,4 @@
-package main.java.tech.ndau.b32;
+package tech.ndau.b32;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
