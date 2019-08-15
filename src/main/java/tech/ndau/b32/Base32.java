@@ -108,24 +108,24 @@ public final class Base32 {
             }
 
             // encode 5-bit blocks using the base32 alphabet
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < Math.min(size, 8); i++) {
                 out.add(this.alphabet[b[i] & 31]);
             }
 
             // Pad the final quantum
             if (src.size() < 2) {
-                out.add(this.padChar);
-                out.add(this.padChar);
+                out.set(out.size()-6, this.padChar);
+                out.set(out.size()-5, this.padChar);
             }
             if (src.size() < 3) {
-                out.add(this.padChar);
+                out.set(out.size()-4, this.padChar);
             }
             if (src.size() < 4) {
-                out.add(this.padChar);
-                out.add(this.padChar);
+                out.set(out.size()-3, this.padChar);
+                out.set(out.size()-2, this.padChar);
             }
             if (src.size() < 5) {
-                out.add(this.padChar);
+                out.set(out.size()-1, this.padChar);
                 break;
             }
 
