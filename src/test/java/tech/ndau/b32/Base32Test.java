@@ -85,26 +85,26 @@ class Base32Test {
 
     @ParameterizedTest
     @MethodSource("testPairs")
-    void encodeToString(String decoded, String encoded) {
-        String out = Base32.StdEncoding.EncodeToString(decoded.getBytes());
+    void encodeToString(final String decoded, final String encoded) {
+        final String out = Base32.STD_ENCODING.encodeToString(decoded.getBytes());
         assertEquals(encoded, out);
     }
 
     @ParameterizedTest
     @MethodSource("testPairs")
-    void decodeString(String decoded, String encoded) throws CorruptInputError {
-        byte[] out = Base32.StdEncoding.DecodeString(encoded);
-        String s = new String(out);
+    void decodeString(final String decoded, final String encoded) throws CorruptInputError {
+        final byte[] out = Base32.STD_ENCODING.decodeString(encoded);
+        final String s = new String(out);
         assertEquals(decoded, s);
     }
 
     @ParameterizedTest
     @MethodSource("decodeCorrupt")
-    void decodeCorrupt(String encoded, int offset) {
+    void decodeCorrupt(final String encoded, final int offset) {
         int caughtOffset = -1;
         try {
-            Base32.StdEncoding.DecodeString(encoded);
-        } catch (CorruptInputError e) {
+            Base32.STD_ENCODING.decodeString(encoded);
+        } catch (final CorruptInputError e) {
             caughtOffset = e.getErrByte();
         }
         assertEquals(offset, caughtOffset);
@@ -112,15 +112,15 @@ class Base32Test {
 
     @ParameterizedTest
     @MethodSource("ndauPairs")
-    void ndauEncodeToString(byte[] decoded, String encoded) {
-        String out = Base32.NdauEncoding.EncodeToString(decoded);
+    void ndauEncodeToString(final byte[] decoded, final String encoded) {
+        final String out = Base32.NDAU_ENCODING.encodeToString(decoded);
         assertEquals(encoded, out);
     }
 
     @ParameterizedTest
     @MethodSource("ndauPairs")
-    void ndauDecodeString(byte[] decoded, String encoded) throws CorruptInputError {
-        byte[] out = Base32.NdauEncoding.DecodeString(encoded);
+    void ndauDecodeString(final byte[] decoded, final String encoded) throws CorruptInputError {
+        final byte[] out = Base32.NDAU_ENCODING.decodeString(encoded);
         assertArrayEquals(out, decoded);
     }
 }

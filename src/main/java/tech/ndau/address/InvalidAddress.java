@@ -4,11 +4,21 @@ package tech.ndau.address;
 public class InvalidAddress extends Exception {
     private static final long serialVersionUID = 3588428215022691968L;
 
-    public InvalidAddress(String message) {
+    /**
+     * Exception representing an invalid address.
+     *
+     * @param message why was this address invalid?
+     */
+    public InvalidAddress(final String message) {
         super(message);
     }
 
-    public InvalidAddress(Exception e) {
+    /**
+     * Wrap an InvalidAddress exception around an inner exception.
+     *
+     * @param e the origin exception.
+     */
+    public InvalidAddress(final Exception e) {
         super(e.toString());
     }
 }

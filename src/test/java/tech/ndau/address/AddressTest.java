@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class AddressTest {
     @Test
     void knownGoodKeyValidates() throws InvalidAddress {
-        Address.Validate("ndadprx764ciigti8d8whtw2kct733r85qvjukhqhke3dka4");
+        Address.validate("ndadprx764ciigti8d8whtw2kct733r85qvjukhqhke3dka4");
     }
 
     @Test
@@ -17,7 +17,7 @@ class AddressTest {
 
     @Test
     void knownBadKeyDoesNotValidate() {
-        assertThrows(InvalidAddress.class, () -> Address.Validate("ndxdprx764ciigti8d8whtw2kct733r85qvjukhqhke3dka4"));
+        assertThrows(InvalidAddress.class, () -> Address.validate("ndxdprx764ciigti8d8whtw2kct733r85qvjukhqhke3dka4"));
     }
 
     @Test

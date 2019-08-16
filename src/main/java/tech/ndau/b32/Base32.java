@@ -1,6 +1,6 @@
 package tech.ndau.b32;
 
-// largely translated from https://golang.org/src/encoding/base32/base32.go?s=569:650#L13
+// largely translated from https://golang.org/src/encoding/base32/base32.go
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,18 +20,19 @@ public final class Base32 {
      * It consists of the lowercase alphabet and digits, without
      * l, 1, 0, and o. When decoding, we accept either case.
      */
-    public static final Base32 NdauEncoding;
-    private static final int decodeMapSize = 256;
-    private static final String StdAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    public static final Base32 NDAU_ENCODING;
+
+    private static final int DECODE_MAP_SIZE = 256;
+    private static final String STD_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     /**
-     * StdEncoding is the standard base32 encoding as defined in RFC 4648
+     * StdEncoding is the standard base32 encoding as defined in RFC 4648.
      */
-    public static final Base32 StdEncoding = new Base32(StdAlphabet);
-    private static final String NdauAlphabet = "abcdefghijkmnpqrstuvwxyz23456789";
+    public static final Base32 STD_ENCODING = new Base32(STD_ALPHABET);
+    private static final String NDAU_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789";
 
     static {
-        NdauEncoding = new Base32(NdauAlphabet);
-        NdauEncoding.foldLowercase = true;
+        NDAU_ENCODING = new Base32(NDAU_ALPHABET);
+        NDAU_ENCODING.foldLowercase = true;
     }
 
     private byte[] alphabet;
@@ -39,7 +40,12 @@ public final class Base32 {
     private byte padChar;
     private boolean foldLowercase = false;
 
-    public Base32(String alphabet) {
+    /**
+     * Create a base32 codec from an alphabet.
+     *
+     * @param alphabet the alphabet to use. Must be 32 bytes long. Each byte must be a valid character.
+     */
+    public Base32(final String alphabet) {
         this.padChar = '=';
         this.alphabet = alphabet.getBytes();
 
@@ -47,7 +53,7 @@ public final class Base32 {
             throw new IllegalArgumentException("encoding alphabet is not 32 bytes long");
         }
 
-        this.decodeMap = new byte[decodeMapSize];
+        this.decodeMap = new byte[DECODE_MAP_SIZE];
         Arrays.fill(this.decodeMap, (byte) 0xff);
         for (int i = 0; i < this.alphabet.length; i++) {
             this.decodeMap[this.alphabet[i]] = (byte) i;
@@ -58,9 +64,10 @@ public final class Base32 {
      * EncodedLen returns the length in bytes of the base32 encoding of an input
      * buffer of length n.
      *
+     * @param n length of source data
      * @return length of encoded
      */
-    public static int EncodedLen(int n) {
+    public static int encodedLen(final int n) {
         return (n + 4) / 5 * 8;
     }
 
@@ -68,9 +75,10 @@ public final class Base32 {
      * DecodedLen returns the maximum length in bytes of the decoded data
      * corresponding to n bytes of base32-encoded data.
      *
-     * @return length of decoded
+     * @param n length of encoded string
+     * @return length of decoded data
      */
-    public static int DecodedLen(int n) {
+    public static int decodedLen(final int n) {
         return n / 8 * 5;
     }
 
@@ -82,43 +90,44 @@ public final class Base32 {
      * appropriate for use on individual blocks of a large data stream.
      *
      * @param src source bytes
+     * @return a list of encoded bytes
      */
-    private List<Byte> Encode(List<Byte> src) {
+    private List<Byte> encode(final List<Byte> src) {
         // shallow-copy the src so we don't clear the original
-        src = new ArrayList<>(src);
+        List<Byte> s = new ArrayList<>(src);
 
-        int size = Base32.EncodedLen(src.size());
+        final int size = Base32.encodedLen(s.size());
 
         // create an output array of the appropriate size
         // we'd really kind of prefer that this be a direct byte array
         // so we can address particular bytes directly, as the go version
         // does, but the go code depends on go-specific slicing behavior which
         // really doesn't translate well into java
-        List<Byte> out = new ArrayList<>(size);
+        final List<Byte> out = new ArrayList<>(size);
 
-        while (src.size() > 0) {
-            byte[] b = new byte[8];
+        while (s.size() > 0) {
+            final byte[] b = new byte[8];
 
             // unpack 8x 5-bit source blocks into a 5-byte
             // destination quantum
-            switch (src.size()) {
+            switch (s.size()) {
                 default:
-                    b[7] = (byte) (src.get(4) & 0x1f);
-                    b[6] = (byte) ((src.get(4) & 0xff) >>> 5);
+                    b[7] = (byte) (s.get(4) & 0x1f);
+                    b[6] = (byte) ((s.get(4) & 0xff) >>> 5);
                 case 4:
-                    b[6] |= (byte) ((src.get(3) << 3) & 0x1f);
-                    b[5] = (byte) (((src.get(3) & 0xff) >>> 2) & 0x1f);
-                    b[4] = (byte) ((src.get(3) & 0xff) >>> 7);
+                    b[6] |= (byte) ((s.get(3) << 3) & 0x1f);
+                    b[5] = (byte) (((s.get(3) & 0xff) >>> 2) & 0x1f);
+                    b[4] = (byte) ((s.get(3) & 0xff) >>> 7);
                 case 3:
-                    b[4] |= (byte) ((src.get(2) << 1) & 0x1f);
-                    b[3] = (byte) (((src.get(2) & 0xff) >>> 4) & 0x1f);
+                    b[4] |= (byte) ((s.get(2) << 1) & 0x1f);
+                    b[3] = (byte) (((s.get(2) & 0xff) >>> 4) & 0x1f);
                 case 2:
-                    b[3] |= (byte) ((src.get(1) << 4) & 0x1f);
-                    b[2] = (byte) (((src.get(1) & 0xff) >>> 1) & 0x1f);
-                    b[1] = (byte) (((src.get(1) & 0xff) >>> 6) & 0x1f);
+                    b[3] |= (byte) ((s.get(1) << 4) & 0x1f);
+                    b[2] = (byte) (((s.get(1) & 0xff) >>> 1) & 0x1f);
+                    b[1] = (byte) (((s.get(1) & 0xff) >>> 6) & 0x1f);
                 case 1:
-                    b[1] |= (byte) ((src.get(0) << 2) & 0x1f);
-                    b[0] = (byte) ((src.get(0) & 0xff) >>> 3);
+                    b[1] |= (byte) ((s.get(0) << 2) & 0x1f);
+                    b[0] = (byte) ((s.get(0) & 0xff) >>> 3);
             }
 
             // encode 5-bit blocks using the base32 alphabet
@@ -127,86 +136,86 @@ public final class Base32 {
             }
 
             // Pad the final quantum
-            if (src.size() < 2) {
+            if (s.size() < 2) {
                 out.set(out.size() - 6, this.padChar);
                 out.set(out.size() - 5, this.padChar);
             }
-            if (src.size() < 3) {
+            if (s.size() < 3) {
                 out.set(out.size() - 4, this.padChar);
             }
-            if (src.size() < 4) {
+            if (s.size() < 4) {
                 out.set(out.size() - 3, this.padChar);
                 out.set(out.size() - 2, this.padChar);
             }
-            if (src.size() < 5) {
+            if (s.size() < 5) {
                 out.set(out.size() - 1, this.padChar);
                 break;
             }
 
-            src = src.subList(5, src.size());
+            s = s.subList(5, s.size());
         }
 
         return out;
     }
 
     /**
-     * EncodeToString encodes the supplied data as a string
+     * EncodeToString encodes the supplied data as a string.
      *
      * @param src input data
      * @return base32 encoding of the input
      */
-    public String EncodeToString(byte[] src) {
+    public String encodeToString(final byte[] src) {
         // there doesn't appear to be a straightforward way to convert byte[] into
         // ArrayList<Byte>,
         // for Reasons
-        ArrayList<Byte> srcl = new ArrayList<>(src.length);
-        for (byte b : src) {
+        final ArrayList<Byte> srcl = new ArrayList<>(src.length);
+        for (final byte b : src) {
             srcl.add(b);
         }
-        List<Byte> data = this.Encode(srcl);
+        final List<Byte> data = this.encode(srcl);
         // of course, there's also no simple way to perform the transform in the other
         // direction either
-        byte[] outa = new byte[data.size()];
+        final byte[] outa = new byte[data.size()];
         int i = 0;
-        for (Byte b : data) {
+        for (final Byte b : data) {
             outa[i] = b;
             i++;
         }
         return new String(outa);
     }
 
-    private List<Byte> Decode(List<Byte> src) throws CorruptInputError {
-        int olen = src.size();
+    private List<Byte> decode(final List<Byte> src) throws CorruptInputError {
+        final int olen = src.size();
         boolean end = false;
         // shallow-copy the src
-        src = new ArrayList<>(src);
+        List<Byte> s = new ArrayList<>(src);
         // prepare dest
-        List<Byte> dst = new ArrayList<>(Base32.DecodedLen(src.size()));
+        final List<Byte> dst = new ArrayList<>(Base32.decodedLen(s.size()));
 
-        while (src.size() > 0 && !end) {
+        while (s.size() > 0 && !end) {
             // decode quantum using the base32 alphabet
-            byte[] dbuf = new byte[8];
+            final byte[] dbuf = new byte[8];
             int dlen = 8;
 
             for (int j = 0; j < 8; j++) {
                 // we have reached the end and are missing padding
-                if (src.size() == 0) {
-                    throw new CorruptInputError(olen - src.size() - j);
+                if (s.size() == 0) {
+                    throw new CorruptInputError(olen - s.size() - j);
                 }
 
-                byte in = src.get(0);
-                src = src.subList(1, src.size());
+                final byte in = s.get(0);
+                s = s.subList(1, s.size());
 
-                if (in == this.padChar && j >= 2 && src.size() < 8) {
+                if (in == this.padChar && j >= 2 && s.size() < 8) {
                     // we've reached the end and there's padding
-                    if (src.size() + j < 8 - 1) {
+                    if (s.size() + j < 8 - 1) {
                         // not enough padding
                         throw new CorruptInputError(olen);
                     }
                     for (int k = 0; k < 8 - 1 - j; k++) {
-                        if (src.size() > k && src.get(k) != this.padChar) {
+                        if (s.size() > k && s.get(k) != this.padChar) {
                             // incorrect padding
-                            throw new CorruptInputError(olen - src.size() + k - 1);
+                            throw new CorruptInputError(olen - s.size() + k - 1);
                         }
                     }
                     dlen = j;
@@ -217,18 +226,18 @@ public final class Base32 {
                     // Examples" for an illustration for how the 1st, 3rd and 6th base32
                     // src bytes do not yield enough information to decode a dst byte.
                     if (dlen == 1 || dlen == 3 || dlen == 6) {
-                        throw new CorruptInputError(olen - src.size() - 1);
+                        throw new CorruptInputError(olen - s.size() - 1);
                     }
                     break;
                 }
                 dbuf[j] = this.decodeMap[in];
                 if (dbuf[j] == (byte) 0xff) {
-                    throw new CorruptInputError(olen - src.size() - 1);
+                    throw new CorruptInputError(olen - s.size() - 1);
                 }
             }
 
             // pack 8 5-bit source blocks into 5 byte destination
-            byte[] suffix = new byte[5]; // bytes to append to the dest
+            final byte[] suffix = new byte[5]; // bytes to append to the dest
             int dcnt = 0; // how many need appending
             switch (dlen) {
                 case 8:
@@ -256,16 +265,23 @@ public final class Base32 {
         return dst;
     }
 
-    public byte[] DecodeString(String src) throws CorruptInputError {
+    /**
+     * Decode a string into the bytes that it represents.
+     *
+     * @param src base32-encoded data.
+     * @return the decoded bytes.
+     * @throws CorruptInputError if src did not in fact encode base32 data with this encoder.
+     */
+    public byte[] decodeString(String src) throws CorruptInputError {
         if (this.foldLowercase) {
             src = src.toLowerCase();
         }
         List<Byte> bytel = new ArrayList<>(src.length());
-        for (byte b : src.getBytes()) {
+        for (final byte b : src.getBytes()) {
             bytel.add(b);
         }
-        bytel = this.Decode(bytel);
-        byte[] out = new byte[bytel.size()];
+        bytel = this.decode(bytel);
+        final byte[] out = new byte[bytel.size()];
         for (int i = 0; i < bytel.size(); i++) {
             out[i] = bytel.get(i);
         }
