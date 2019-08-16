@@ -4,6 +4,7 @@ Features are developed here on an as-required basis; Java is not an ndau tier 1 
 
 ## Completed Features
 
+- ndau address validation
+
 ## Planned Features
 
-- ndau address validation
