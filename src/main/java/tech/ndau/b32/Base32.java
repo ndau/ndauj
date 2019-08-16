@@ -103,21 +103,21 @@ public final class Base32 {
             switch (src.size()) {
                 default:
                     b[7] = (byte) (src.get(4) & 0x1f);
-                    b[6] = (byte) (src.get(4) >> 5);
+                    b[6] = (byte) ((src.get(4) & 0xff) >>> 5);
                 case 4:
                     b[6] |= (byte) ((src.get(3) << 3) & 0x1f);
-                    b[5] = (byte) ((src.get(3) >> 2) & 0x1f);
-                    b[4] = (byte) (src.get(3) >> 7);
+                    b[5] = (byte) (((src.get(3) & 0xff) >>> 2) & 0x1f);
+                    b[4] = (byte) ((src.get(3) & 0xff) >>> 7);
                 case 3:
                     b[4] |= (byte) ((src.get(2) << 1) & 0x1f);
-                    b[3] = (byte) ((src.get(2) >> 4) & 0x1f);
+                    b[3] = (byte) (((src.get(2) & 0xff) >>> 4) & 0x1f);
                 case 2:
                     b[3] |= (byte) ((src.get(1) << 4) & 0x1f);
-                    b[2] = (byte) ((src.get(1) >> 1) & 0x1f);
-                    b[1] = (byte) ((src.get(1) >> 6) & 0x1f);
+                    b[2] = (byte) (((src.get(1) & 0xff) >>> 1) & 0x1f);
+                    b[1] = (byte) (((src.get(1) & 0xff) >>> 6) & 0x1f);
                 case 1:
                     b[1] |= (byte) ((src.get(0) << 2) & 0x1f);
-                    b[0] = (byte) (src.get(0) >> 3);
+                    b[0] = (byte) ((src.get(0) & 0xff) >>> 3);
             }
 
             // encode 5-bit blocks using the base32 alphabet
@@ -234,16 +234,16 @@ public final class Base32 {
                     suffix[4] = (byte) (dbuf[6] << 5 | dbuf[7]);
                     dcnt++;
                 case 7:
-                    suffix[3] = (byte) (dbuf[4] << 7 | dbuf[5] << 2 | dbuf[6] >> 3);
+                    suffix[3] = (byte) (dbuf[4] << 7 | dbuf[5] << 2 | (dbuf[6] & 0xff) >>> 3);
                     dcnt++;
                 case 5:
-                    suffix[2] = (byte) (dbuf[3] << 4 | dbuf[4] >> 1);
+                    suffix[2] = (byte) (dbuf[3] << 4 | (dbuf[4] & 0xff) >>> 1);
                     dcnt++;
                 case 4:
-                    suffix[1] = (byte) (dbuf[1] << 6 | dbuf[2] << 1 | dbuf[3] >> 4);
+                    suffix[1] = (byte) (dbuf[1] << 6 | dbuf[2] << 1 | (dbuf[3] & 0xff) >>> 4);
                     dcnt++;
                 case 2:
-                    suffix[0] = (byte) (dbuf[0] << 3 | dbuf[1] >> 2);
+                    suffix[0] = (byte) (dbuf[0] << 3 | (dbuf[1] & 0xff) >>> 2);
                     dcnt++;
             }
 

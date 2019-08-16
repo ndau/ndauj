@@ -4,9 +4,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Base32Test {
 
@@ -68,6 +70,20 @@ class Base32Test {
         );
     }
 
+    private static Stream<Arguments> ndauPairs() {
+        return Stream.of(
+                Arguments.of(new byte[]{}, ""),
+                Arguments.of(new byte[]{1, 2, 3, 4, 5}, "aebagbaf"),
+                Arguments.of(new byte[]{0, 0, 0, 0, 0}, "aaaaaaaa"),
+                Arguments.of(new byte[]{99, 100, 21, 0, 0}, "npubkaaa"),
+                Arguments.of(new byte[]{99, 100, 21, (byte) 255, (byte) 255}, "npubm999"),
+                Arguments.of(new byte[]{99, 100, 16, 0, 0}, "npubaaaa"),
+                Arguments.of(new byte[]{99, 103, 31, (byte) 255, (byte) 255}, "npvt9999"),
+                Arguments.of(new byte[]{(byte) 139, 100, 16, 0, 0}, "tpubaaaa"),
+                Arguments.of(new byte[]{(byte) 139, 103, 31, (byte) 255, (byte) 255}, "tpvt9999")
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("testPairs")
     void encodeToString(String decoded, String encoded) {
@@ -93,5 +109,19 @@ class Base32Test {
             caughtOffset = e.getErrByte();
         }
         assertEquals(offset, caughtOffset);
+    }
+
+    @ParameterizedTest
+    @MethodSource("ndauPairs")
+    void ndauEncodeToString(byte[] decoded, String encoded) {
+        String out = Base32.NdauEncoding.EncodeToString(decoded);
+        assertEquals(encoded, out);
+    }
+
+    @ParameterizedTest
+    @MethodSource("ndauPairs")
+    void ndauDecodeString(byte[] decoded, String encoded) throws CorruptInputError {
+        byte[] out = Base32.NdauEncoding.DecodeString(encoded);
+        assertTrue(Arrays.equals(out, decoded));
     }
 }
