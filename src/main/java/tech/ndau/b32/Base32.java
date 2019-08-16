@@ -12,6 +12,7 @@ import java.util.List;
  * and standardized in RFC 4648. The alternate "base32hex" encoding is used in
  * DNSSEC.
  */
+@SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
 public final class Base32 {
     /**
      * NdauEncoding is base32 encoding with a custom alphabet.
@@ -19,14 +20,14 @@ public final class Base32 {
      * It consists of the lowercase alphabet and digits, without
      * l, 1, 0, and o. When decoding, we accept either case.
      */
-    public static Base32 NdauEncoding;
-    private static int decodeMapSize = 256;
-    private static String StdAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    public static final Base32 NdauEncoding;
+    private static final int decodeMapSize = 256;
+    private static final String StdAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     /**
      * StdEncoding is the standard base32 encoding as defined in RFC 4648
      */
-    public static Base32 StdEncoding = new Base32(StdAlphabet);
-    private static String NdauAlphabet = "abcdefghijkmnpqrstuvwxyz23456789";
+    public static final Base32 StdEncoding = new Base32(StdAlphabet);
+    private static final String NdauAlphabet = "abcdefghijkmnpqrstuvwxyz23456789";
 
     static {
         NdauEncoding = new Base32(NdauAlphabet);
@@ -158,7 +159,7 @@ public final class Base32 {
         // there doesn't appear to be a straightforward way to convert byte[] into
         // ArrayList<Byte>,
         // for Reasons
-        ArrayList<Byte> srcl = new ArrayList<Byte>(src.length);
+        ArrayList<Byte> srcl = new ArrayList<>(src.length);
         for (byte b : src) {
             srcl.add(b);
         }

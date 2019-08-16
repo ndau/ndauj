@@ -5,10 +5,11 @@ import tech.ndau.b32.Base32;
 import tech.ndau.b32.CorruptInputError;
 
 public final class Address {
-    public static int AddrLength = 48;
+    @SuppressWarnings("WeakerAccess")
+    public static final int AddrLength = 48;
+    private static final String addrPrefix = "nd";
+    private static final int kindOffset = Address.addrPrefix.length();
     public static int MinDataLength = 12;
-    private static String addrPrefix = "nd";
-    private static int kindOffset = Address.addrPrefix.length();
     private static int hashTrim = 26;
     private String addr;
 
@@ -79,6 +80,7 @@ public final class Address {
         BPC,
         MarketMaker;
 
+        @SuppressWarnings("WeakerAccess")
         public static Kind Parse(byte b) throws IllegalArgumentException {
             switch (b) {
                 case 'a':
@@ -120,10 +122,10 @@ public final class Address {
     }
 
     private static class Pair<X, Y> {
-        public final X x;
-        public final Y y;
+        final X x;
+        final Y y;
 
-        public Pair(X x, Y y) {
+        Pair(X x, Y y) {
             this.x = x;
             this.y = y;
         }

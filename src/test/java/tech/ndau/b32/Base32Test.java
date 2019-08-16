@@ -4,11 +4,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Base32Test {
 
@@ -122,6 +121,6 @@ class Base32Test {
     @MethodSource("ndauPairs")
     void ndauDecodeString(byte[] decoded, String encoded) throws CorruptInputError {
         byte[] out = Base32.NdauEncoding.DecodeString(encoded);
-        assertTrue(Arrays.equals(out, decoded));
+        assertArrayEquals(out, decoded);
     }
 }
