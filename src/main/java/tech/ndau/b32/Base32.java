@@ -1,3 +1,14 @@
+/*
+ * This library is licensed under version 3.0 of the GNU Lesser General Public License as
+ * published by the Free Software Foundation.
+ *
+ * This software is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License 3.0 for more details.
+ *
+ * Copyright © 2019 Oneiro NA, Inc.
+ */
+
 package tech.ndau.b32;
 
 // largely translated from https://golang.org/src/encoding/base32/base32.go
