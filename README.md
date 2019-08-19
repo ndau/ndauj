@@ -1,10 +1,8 @@
 # `ndauj`: ndau libraries in Java
 
-Features are developed here on an as-required basis; Java is not an ndau tier 1 supported language.
+Features are developed here on an as-required basis.
 
 ## Completed Features
 
 - ndau address validation
-
-## Planned Features
 
