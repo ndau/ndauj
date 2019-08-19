@@ -121,6 +121,8 @@ public final class Base32 {
 
             // unpack 8x 5-bit source blocks into a 5-byte
             // destination quantum
+
+            // note: this code intentionally falls through to set only the appropriate bytes of b.
             switch (s.size()) {
                 default:
                     b[7] = (byte) (s.get(4) & 0x1f);
