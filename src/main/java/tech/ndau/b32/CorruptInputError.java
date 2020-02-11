@@ -6,7 +6,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License 3.0 for more details.
  *
- * Copyright © 2019 Oneiro NA, Inc.
+ * Copyright © 2020 The Axiom Foundation
  */
 
 package tech.ndau.b32;
